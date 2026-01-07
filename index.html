@@ -308,7 +308,8 @@
     let screenshotFile = null;
     let orderId = null;
 
-    const UPI_VPA = "millionaireytuc@ptaxis";
+    // UPDATED UPI ID
+    const UPI_VPA = "ucify@ptaxis";
     const PURCHASES_KEY = 'ucify_purchased_packs';
 
     // Haptic feedback helper
@@ -484,7 +485,6 @@
     }
 
     uidInput.addEventListener('input', function() {
-      // Remove any non-digits and limit to 10
       this.value = this.value.replace(/\D/g, '').slice(0, 10);
       
       const isValid = validateUID(this.value);
@@ -493,7 +493,6 @@
         showValidation(this, uidIcon, uidError, isValid);
         if(isValid) triggerHaptic('light');
       } else {
-        // Reset visual state while typing until 10 digits reached
         this.classList.remove('valid', 'invalid');
         uidIcon.className = 'input-icon';
         uidError.classList.remove('show');
