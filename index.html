@@ -523,6 +523,9 @@
     .toast.show{display:flex;}
     .toast i{color:var(--mint);font-size:18px;}
     .toast-text{color:#fff;font-size:13px;font-weight:700;}
+
+    /* Change: Hide order button initially */
+    #submitBtn, #stickySubmitBtn { display: none; }
   </style>
 </head>
 
@@ -742,7 +745,7 @@
 
           <div class="btn-row">
             <button type="button" class="btn btn-secondary" id="back3">Back</button>
-            <button type="submit" class="btn btn-primary" id="submitBtn" disabled title="Please upload payment screenshot first">
+            <button type="submit" class="btn btn-primary" id="submitBtn">
               <i class="fa-solid fa-rocket"></i> Place Order
             </button>
           </div>
@@ -800,7 +803,7 @@
   </div>
 
   <div class="sticky-btn-wrap" id="stickyBtnWrap">
-    <button type="submit" form="orderForm" id="stickySubmitBtn" class="btn btn-primary" style="margin:0;" disabled>
+    <button type="submit" form="orderForm" id="stickySubmitBtn" class="btn btn-primary" style="margin:0;">
       <i class="fa-solid fa-rocket"></i> Place Order
     </button>
   </div>
@@ -1026,21 +1029,23 @@
       currentStep = step;
       updateProgress();
       smoothScrollToTop();
-      const stickyBtn = document.getElementById('stickyBtnWrap');
+      const stickyBtnWrap = document.getElementById('stickyBtnWrap');
+      
       if(step === 3){
-        setTimeout(() => { window.addEventListener('scroll', handleStickyButton); }, 500);
+        window.addEventListener('scroll', handleStickyButton);
       } else {
-        stickyBtn.classList.remove('show');
+        stickyBtnWrap.classList.remove('show');
         window.removeEventListener('scroll', handleStickyButton);
       }
     }
 
     function handleStickyButton(){
-      const stickyBtn = document.getElementById('stickyBtnWrap');
-      if(window.scrollY > 300 && currentStep === 3){
-        stickyBtn.classList.add('show');
+      const stickyBtnWrap = document.getElementById('stickyBtnWrap');
+      // Sticky area tabhi dikhega jab screenshot uploaded ho
+      if(window.scrollY > 300 && currentStep === 3 && screenshotFile){
+        stickyBtnWrap.classList.add('show');
       } else {
-        stickyBtn.classList.remove('show');
+        stickyBtnWrap.classList.remove('show');
       }
     }
 
@@ -1180,10 +1185,12 @@
               document.getElementById('uploadSuccessIcon').style.display = 'block';
               document.getElementById('uploadText').textContent = '✓ Screenshot Ready';
               
-              // Enable buttons only after successful upload
-              submitBtn.disabled = false;
-              stickySubmitBtn.disabled = false;
-              submitBtn.removeAttribute('title');
+              // Change: Show buttons ONLY after successful upload
+              submitBtn.style.display = 'block';
+              stickySubmitBtn.style.display = 'block';
+              
+              // Handle sticky visibility if user is already scrolled down
+              handleStickyButton();
               
               triggerHaptic('success');
             } else { width += 5; progressBar.style.width = width + '%'; }
@@ -1198,7 +1205,6 @@
     document.getElementById('orderForm').onsubmit = async (e) => {
       e.preventDefault();
       
-      // Secondary check for security
       if(!screenshotFile) {
           alert("Please upload a payment screenshot first.");
           return;
