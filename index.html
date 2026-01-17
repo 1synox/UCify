@@ -655,12 +655,12 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">BGMI UID (Exactly 10 digits)</label>
+          <label class="form-label">BGMI UID (9-12 digits)</label>
           <div class="form-input-wrapper">
-            <input type="tel" class="form-input" id="uid" placeholder="1234567890" maxlength="10" inputmode="numeric">
+            <input type="tel" class="form-input" id="uid" placeholder="1234567890" maxlength="12" inputmode="numeric">
             <i class="input-icon" id="uidIcon"></i>
           </div>
-          <div class="error-message" id="uidError">Please enter a valid 10-digit UID</div>
+          <div class="error-message" id="uidError">Please enter a valid 9-12 digit UID</div>
         </div>
 
         <div class="form-group">
@@ -911,44 +911,33 @@
       return new Date(new Intl.DateTimeFormat('en-IN', { timeZone:'Asia/Kolkata', hour:'2-digit', hour12:false }).format(new Date())).getHours();
     }
 
-    // --- UPDATED LIVE ORDER COUNTER LOGIC ---
     function animateLiveOrders(){
       const el = document.getElementById('liveOrders');
       const currentHour = getIndiaHour();
       
-      // Reset logic: If it's between 1 AM and 9 AM (Store closed), show 0
       if (currentHour >= 1 && currentHour < 9) {
           el.textContent = "0";
           return;
       }
 
-      // Base number between 1000 and 3000 on load
       let currentOrders = 1000 + Math.floor(Math.random() * 2001);
       el.textContent = currentOrders;
 
-      // Update every 15-20 seconds
       function updateCounter() {
           const h = getIndiaHour();
           if (h >= 1 && h < 9) {
               el.textContent = "0";
           } else {
-              currentOrders += 1; // Increase by 1 order
+              currentOrders += 1;
               el.textContent = currentOrders;
-              
-              // Visual pulse effect
               el.style.animation = 'none';
               setTimeout(() => el.style.animation = '', 10);
           }
-          
-          // Set next update between 15000ms (15s) and 20000ms (20s)
           let nextInterval = 15000 + Math.floor(Math.random() * 5001);
           setTimeout(updateCounter, nextInterval);
       }
-      
-      // Start the dynamic interval loop
       setTimeout(updateCounter, 15000);
     }
-    // --- END UPDATED LOGIC ---
 
     animateLiveOrders();
 
@@ -1107,26 +1096,40 @@
     const ignIcon = document.getElementById('ignIcon');
     const uidError = document.getElementById('uidError');
 
+    // --- UID VALIDATION UPDATED FOR 9-12 DIGITS ---
     uidInput.addEventListener('input', function(){
-      this.value = this.value.replace(/\D/g, '').slice(0,10);
-      const isValid = this.value.length === 10;
-      if(this.value.length === 10){
-          uidInput.classList.toggle('valid', isValid);
+      this.value = this.value.replace(/\D/g, '').slice(0,12); // Max 12 digits
+      const len = this.value.length;
+      const isValid = len >= 9 && len <= 12; // Valid range 9 to 12
+      
+      if(isValid){
+          uidInput.classList.add('valid');
+          uidInput.classList.remove('invalid');
           uidIcon.className = 'input-icon check fas fa-check-circle';
           uidError.classList.remove('show');
           triggerHaptic('light');
+      } else {
+          uidInput.classList.remove('valid');
+          uidIcon.className = '';
       }
+      
       document.getElementById('next2').disabled = !(isValid && ignInput.value.trim().length >= 2);
     });
 
     ignInput.addEventListener('input', function(){
         const isValid = this.value.trim().length >= 2;
+        const uidLen = uidInput.value.length;
+        const isUidValid = uidLen >= 9 && uidLen <= 12;
+        
         if(isValid){
           ignInput.classList.add('valid');
           ignIcon.className = 'input-icon check fas fa-check-circle';
           triggerHaptic('light');
+        } else {
+          ignInput.classList.remove('valid');
+          ignIcon.className = '';
         }
-        document.getElementById('next2').disabled = !(isValid && uidInput.value.length === 10);
+        document.getElementById('next2').disabled = !(isValid && isUidValid);
     });
 
     document.getElementById('back2').onclick = () => showStep(1);
